@@ -1,0 +1,670 @@
+/* ════════════════════════════════
+   LAYOUT BASE
+════════════════════════════════ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.dash-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f0f4ff;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* ════════════════════════════════
+   SIDEBAR
+════════════════════════════════ */
+.dash-sidebar {
+    width: 180px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+}
+
+.paciente-sidebar {
+    background: #2563eb;
+}
+
+.recep-sidebar {
+    background: #2563eb;
+}
+
+.doctor-sidebar {
+    background: #2563eb;
+}
+
+.admin-sidebar {
+    background: #7c3aed;
+}
+
+.dash-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+}
+
+.dash-brand-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.dash-brand-name {
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.dash-brand-sub {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+}
+
+.dash-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.dash-nav-item {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dash-nav-item:hover,
+.dash-nav-item.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.dash-salir {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.dash-salir:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ════════════════════════════════
+   MAIN
+════════════════════════════════ */
+.dash-main {
+    margin-left: 180px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 5rem;
+}
+
+/* ════════════════════════════════
+   HEADER
+════════════════════════════════ */
+.dash-header {
+    padding: 1.5rem 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-radius: 0 0 24px 0;
+    margin-bottom: 1rem;
+}
+
+.paciente-header {
+    background: linear-gradient(135deg, #1a56e8, #06b6d4);
+}
+
+.recep-header {
+    background: linear-gradient(135deg, #1a56e8, #06b6d4);
+}
+
+.doctor-header {
+    background: linear-gradient(135deg, #1a56e8, #0284c7);
+}
+
+.admin-header {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+}
+
+.dash-fecha {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.dash-saludo {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.dash-bell {
+    position: relative;
+    font-size: 1.3rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.dash-bell-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ════════════════════════════════
+   CARD PACIENTE ACTIVO
+════════════════════════════════ */
+.dash-paciente-card {
+    margin: -1rem 1.5rem 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 1;
+}
+
+.dash-paciente-icon {
+    font-size: 1.4rem;
+}
+
+.dash-paciente-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.7rem;
+}
+
+.dash-paciente-nombre {
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.dash-paciente-rating {
+    margin-left: auto;
+    color: white;
+    font-weight: 700;
+}
+
+/* ════════════════════════════════
+   STATS TOP (recepcionista / doctor / admin)
+════════════════════════════════ */
+.dash-stats-top {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 0 1.5rem 1rem;
+}
+
+.dash-stat-top {
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.dash-stat-top.azul {
+    background: rgba(37, 99, 235, 0.85);
+}
+
+.dash-stat-top.gris {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.dash-stat-top.morado {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.dash-stat-top-num {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* ════════════════════════════════
+   SECCIONES
+════════════════════════════════ */
+.dash-section {
+    padding: 0 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dash-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dash-section-titulo {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.08em;
+}
+
+.dash-ver-todas {
+    font-size: 0.8rem;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* ════════════════════════════════
+   PRÓXIMA CITA
+════════════════════════════════ */
+.dash-proxima-cita {
+    background: #2563eb;
+    border-radius: 16px;
+    padding: 1.1rem;
+    color: white;
+}
+
+.doctor-proxima {
+    background: linear-gradient(135deg, #1a56e8, #0284c7);
+}
+
+.dash-cita-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    margin-bottom: 0.5rem;
+}
+
+.dash-cita-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dash-cita-top h3 {
+    font-size: 1rem;
+    color: white;
+}
+
+.dash-cita-cal {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+.dash-cita-info {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0.4rem 0;
+}
+
+.dash-cita-link {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+}
+
+/* ════════════════════════════════
+   ACCIONES RÁPIDAS (paciente)
+════════════════════════════════ */
+.dash-acciones {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.paciente-acciones {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.dash-accion {
+    border-radius: 14px;
+    padding: 0.85rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.dash-accion:hover {
+    transform: translateY(-2px);
+}
+
+.dash-accion p {
+    font-size: 0.68rem;
+    color: #374151;
+    text-align: center;
+}
+
+.dash-accion.azul {
+    background: #dbeafe;
+}
+
+.dash-accion.verde {
+    background: #d1fae5;
+}
+
+.dash-accion.morado {
+    background: #ede9fe;
+}
+
+.dash-accion.amarillo {
+    background: #fef3c7;
+}
+
+/* Acciones recepcionista / doctor */
+.dash-acciones-recep {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.dash-accion-recep {
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.dash-accion-recep:hover {
+    transform: translateY(-1px);
+}
+
+.azul-claro {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.verde-claro {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.amarillo-claro {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.morado-claro {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+/* ════════════════════════════════
+   STATS PACIENTE
+════════════════════════════════ */
+.dash-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 0 1.5rem 1rem;
+}
+
+.dash-stat {
+    background: white;
+    border-radius: 14px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.dash-stat-num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    display: block;
+}
+
+.dash-stat p {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    margin-top: 0.2rem;
+}
+
+/* ════════════════════════════════
+   HISTORIAL / LISTA ITEMS
+════════════════════════════════ */
+.dash-historial-item {
+    background: white;
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dash-hist-icon {
+    font-size: 1.2rem;
+}
+
+.dash-hist-avatar {
+    width: 36px;
+    height: 36px;
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.dash-hist-avatar.grande {
+    width: 48px;
+    height: 48px;
+    font-size: 1.1rem;
+}
+
+.dash-hist-info {
+    flex: 1;
+}
+
+.dash-hist-nombre {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.dash-hist-fecha {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.dash-hist-doctor {
+    font-size: 0.72rem;
+    color: #2563eb;
+}
+
+.dash-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+}
+
+.dash-badge.pendiente {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.dash-badge.confirmada {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.dash-badge.completada {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.dash-badge.cancelada {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* ════════════════════════════════
+   PAGOS CARD
+════════════════════════════════ */
+.dash-pagos-card {
+    background: #d1fae5;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+}
+
+.dash-pagos-label {
+    font-size: 0.8rem;
+    color: #065f46;
+}
+
+.dash-pagos-monto {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #059669;
+}
+
+/* ════════════════════════════════
+   NAV MÓVIL
+════════════════════════════════ */
+.dash-mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 0.5rem 0 0.75rem;
+    z-index: 200;
+}
+
+.dash-mobile-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    flex: 1;
+    font-size: 1.2rem;
+    text-decoration: none;
+    color: #9ca3af;
+}
+
+.dash-mobile-item span {
+    font-size: 0.65rem;
+    color: #9ca3af;
+}
+
+.dash-mobile-item.active {
+    color: #2563eb;
+}
+
+.dash-mobile-item.active span {
+    color: #2563eb;
+}
+
+/* ════════════════════════════════
+   RESPONSIVO MÓVIL
+════════════════════════════════ */
+@media (max-width: 768px) {
+    .dash-sidebar {
+        display: none;
+    }
+
+    .dash-main {
+        margin-left: 0;
+        padding-bottom: 5rem;
+    }
+
+    .dash-mobile-nav {
+        display: flex;
+    }
+
+    .dash-acciones {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .dash-stats-top {
+        padding: 0 1rem 1rem;
+    }
+
+    .dash-section {
+        padding: 0 1rem 1rem;
+    }
+
+    .dash-header {
+        border-radius: 0 0 20px 20px;
+    }
+
+    .dash-saludo {
+        font-size: 1.2rem;
+    }
+
+    .dash-acciones-recep {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 400px) {
+    .dash-acciones {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
