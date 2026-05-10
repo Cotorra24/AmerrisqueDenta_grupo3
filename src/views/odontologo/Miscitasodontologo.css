@@ -1,0 +1,282 @@
+/* MisCitasOdontologo.css */
+.mco-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    background: #f0f4ff;
+}
+
+.mco-header {
+    background: linear-gradient(135deg, #1a56e8, #0284c7);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mco-volver {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.mco-titulo {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.mco-subtitulo {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.mco-fechas {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem 0.5rem;
+    overflow-x: auto;
+}
+
+.mco-fecha-btn {
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    color: #6b7280;
+    padding: 0.45rem 1rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.mco-fecha-btn.activo {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+    font-weight: 600;
+}
+
+.mco-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 0 1.5rem;
+}
+
+.mco-stat {
+    background: white;
+    border-radius: 12px;
+    padding: 0.85rem;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.mco-stat span {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+}
+
+.mco-stat.azul span {
+    color: #2563eb;
+}
+
+.mco-stat.verde span {
+    color: #059669;
+}
+
+.mco-stat.amarillo span {
+    color: #d97706;
+}
+
+.mco-stat p {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    margin: 0.2rem 0 0;
+}
+
+.mco-progreso-wrap {
+    padding: 0.75rem 1.5rem;
+}
+
+.mco-progreso-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 0.4rem;
+}
+
+.mco-progreso-num {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.mco-progreso-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mco-progreso-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 3px;
+    transition: width 0.4s;
+}
+
+.mco-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 1.5rem 1.5rem;
+}
+
+.mco-cargando {
+    display: flex;
+    justify-content: center;
+    padding: 3rem;
+}
+
+.mco-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: mco-spin 0.7s linear infinite;
+}
+
+@keyframes mco-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.mco-vacio {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem;
+    font-size: 0.9rem;
+}
+
+.mco-cita {
+    background: white;
+    border-radius: 14px;
+    padding: 0.9rem;
+    display: flex;
+    gap: 0.75rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.mco-cita-linea {
+    width: 4px;
+    background: #2563eb;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.mco-cita-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.mco-cita-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+
+.mco-cita-paciente {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #111827;
+    margin: 0;
+}
+
+.mco-cita-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+}
+
+.mco-hora {
+    font-size: 0.8rem;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.mco-servicio {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin: 0 0 0.35rem;
+}
+
+.mco-notas {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0 0 0.35rem;
+}
+
+.mco-cita-acciones {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.mco-btn-historial {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: none;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.mco-btn-consulta {
+    background: #ecfdf5;
+    color: #065f46;
+    border: none;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.mco-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.mco-badge.pendiente,
+.mco-badge.confirmada {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.mco-badge.completada {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.mco-badge.cancelada {
+    background: #fee2e2;
+    color: #b91c1c;
+}

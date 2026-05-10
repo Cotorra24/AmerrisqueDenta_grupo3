@@ -1,0 +1,555 @@
+.ac-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.ac-header {
+    background: linear-gradient(135deg, #1a56e8, #06b6d4);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ac-volver {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ac-titulo {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.ac-subtitulo {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+/* Pasos */
+.ac-pasos {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    overflow-x: auto;
+    gap: 0;
+}
+
+.ac-paso-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.ac-paso-circulo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #d1d5db;
+    background: white;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.ac-paso-circulo.activo {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: white;
+}
+
+.ac-paso-circulo.completado {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: white;
+}
+
+.ac-paso-label {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    white-space: nowrap;
+}
+
+.ac-paso-label.activo {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.ac-paso-linea {
+    flex: 1;
+    min-width: 24px;
+    max-width: 60px;
+    height: 2px;
+    background: #e5e7eb;
+    margin: 0 0.3rem;
+}
+
+.ac-paso-linea.completada {
+    background: #2563eb;
+}
+
+.ac-contenido {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem 1.5rem;
+}
+
+.ac-paso {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.ac-paso-titulo {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.ac-sub-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0.25rem 0 0;
+}
+
+/* Búsqueda paciente */
+.ac-busqueda {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.7rem 1rem;
+}
+
+.ac-busqueda input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+/* Lista pacientes */
+.ac-lista-pacientes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.ac-paciente-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.ac-paciente-item.seleccionado {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.ac-paciente-item:hover {
+    border-color: #93c5fd;
+}
+
+.ac-pac-avatar {
+    width: 36px;
+    height: 36px;
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.ac-pac-nombre {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #111827;
+    margin: 0;
+}
+
+.ac-pac-detalle {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.ac-pac-info {
+    flex: 1;
+}
+
+.ac-check {
+    color: #2563eb;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Paciente seleccionado banner */
+.ac-paciente-seleccionado {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+}
+
+.ac-paciente-seleccionado span {
+    font-weight: 600;
+    color: #1d4ed8;
+}
+
+/* Fechas */
+.ac-fechas {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+}
+
+.ac-fecha-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0.9rem;
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    min-width: 58px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.ac-fecha-item.seleccionado {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.ac-fecha-dia {
+    font-size: 0.7rem;
+    color: #6b7280;
+}
+
+.ac-fecha-num {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.1;
+}
+
+.ac-fecha-mes {
+    font-size: 0.65rem;
+    color: #9ca3af;
+}
+
+.ac-fecha-item.seleccionado .ac-fecha-dia,
+.ac-fecha-item.seleccionado .ac-fecha-num,
+.ac-fecha-item.seleccionado .ac-fecha-mes {
+    color: white;
+}
+
+/* Horarios */
+.ac-horarios {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.ac-hora {
+    padding: 0.6rem;
+    text-align: center;
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+}
+
+.ac-hora.seleccionado {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+    font-weight: 600;
+}
+
+.ac-hora.ocupado {
+    background: #f3f4f6;
+    color: #d1d5db;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+.ac-hora:hover:not(.ocupado):not(.seleccionado) {
+    border-color: #93c5fd;
+}
+
+.ac-leyenda {
+    display: flex;
+    gap: 1rem;
+}
+
+.ac-ley-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.ac-ley-circulo {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid;
+}
+
+.ac-ley-circulo.disponible {
+    border-color: #2563eb;
+    background: white;
+}
+
+.ac-ley-circulo.ocupado {
+    border-color: #d1d5db;
+    background: #f3f4f6;
+}
+
+/* Odontólogos */
+.ac-lista-od {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ac-od-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.ac-od-item.seleccionado {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.ac-od-avatar {
+    font-size: 1.3rem;
+}
+
+.ac-od-nombre {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #111827;
+    margin: 0;
+}
+
+.ac-od-esp {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Servicios */
+.ac-servicios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ac-servicio-tag {
+    padding: 0.4rem 0.85rem;
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #374151;
+}
+
+.ac-servicio-tag.seleccionado {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+    font-weight: 600;
+}
+
+.ac-notas {
+    width: 100%;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: #111827;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    background: #f9fafb;
+}
+
+.ac-notas:focus {
+    border-color: #2563eb;
+    background: white;
+}
+
+/* Resumen */
+.ac-resumen {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 14px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ac-resumen-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e0f2fe;
+}
+
+.ac-resumen-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.ac-res-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.ac-res-label {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.ac-res-valor {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #111827;
+    margin: 0;
+}
+
+.ac-aviso {
+    display: flex;
+    gap: 0.75rem;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+}
+
+.ac-aviso p {
+    font-size: 0.8rem;
+    color: #065f46;
+    margin: 0;
+}
+
+/* Botones */
+.ac-botones {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    position: sticky;
+    bottom: 0;
+}
+
+.ac-btn-anterior {
+    flex: 1;
+    background: #f3f4f6;
+    border: none;
+    padding: 0.9rem;
+    border-radius: 14px;
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.ac-btn-siguiente,
+.ac-btn-confirmar {
+    flex: 2;
+    background: #2563eb;
+    border: none;
+    padding: 0.9rem;
+    border-radius: 14px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.ac-btn-confirmar:disabled {
+    opacity: 0.6;
+}
+
+.ac-error {
+    color: #dc2626;
+    font-size: 0.8rem;
+    padding: 0 1.5rem 0.75rem;
+    text-align: center;
+}
+
+.ac-error-nav {
+    color: #dc2626;
+    font-size: 0.8rem;
+    padding: 0 1.5rem 0.5rem;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .ac-horarios {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
