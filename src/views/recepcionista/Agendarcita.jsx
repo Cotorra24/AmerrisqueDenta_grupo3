@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../database/supabaseconfig'
-import './AgendarCita.css'
+import CitaHeader from '../../components/citas/CitaHeader'
+import CitaPasosNav from '../../components/citas/CitaPasosNav'
+import PasoSeleccionPaciente from '../../components/citas/PasoSeleccionPaciente'
+import PasoFechaHora from '../../components/citas/PasoFechaHora'
+import PasoDetalles from '../../components/citas/PasoDetalles'
+import PasoResumen from '../../components/citas/PasoResumen'
 
 // rolCreador: 'recepcionista' | 'paciente'
 export default function AgendarCita({ onVolver, onExito, rolCreador = 'recepcionista' }) {
@@ -176,257 +181,70 @@ export default function AgendarCita({ onVolver, onExito, rolCreador = 'recepcion
 
     return (
         <div className="ac-wrapper">
-            {/* Header */}
-            <div className="ac-header">
-                {onVolver && <button className="ac-volver" onClick={onVolver}>←</button>}
-                <div>
-                    <h1 className="ac-titulo">Agendar Cita</h1>
-                    <p className="ac-subtitulo">
-                        {rolCreador === 'paciente' 
-                            ? 'Reserva tu próxima consulta' 
-                            : 'Programar consulta para paciente'}
-                    </p>
-                </div>
-            </div>
-
-            {/* Pasos */}
-            <div className="ac-pasos">
-                {pasos.map((p, i) => {
-                    const num = i + 1
-                    const activo = num === paso
-                    const completado = num < paso
-                    return (
-                        <div key={p} className="ac-paso-item">
-                            <div className={`ac-paso-circulo ${activo ? 'activo' : completado ? 'completado' : ''}`}>
-                                {completado ? '✓' : num}
-                            </div>
-                            <span className={`ac-paso-label ${activo ? 'activo' : ''}`}>{p}</span>
-                            {i < pasos.length - 1 && <div className={`ac-paso-linea ${completado ? 'completada' : ''}`} />}
-                        </div>
-                    )
-                })}
-            </div>
+            <CitaHeader onVolver={onVolver} rolCreador={rolCreador} />
+            <CitaPasosNav pasos={pasos} pasoActual={paso} />
 
             <div className="ac-contenido">
-                {/* PASO 1 - Recepcionista: Seleccionar paciente */}
                 {rolCreador === 'recepcionista' && paso === 1 && (
-                    <div className="ac-paso">
-                        <h2 className="ac-paso-titulo">Seleccionar paciente</h2>
-                        <div className="ac-busqueda">
-                            <span>🔍</span>
-                            <input 
-                                placeholder="Buscar por nombre o cédula..." 
-                                value={busquedaPaciente} 
-                                onChange={e => setBusquedaPaciente(e.target.value)} 
-                            />
-                        </div>
-                        <div className="ac-lista-pacientes">
-                            {pacientesFiltrados.map(p => (
-                                <div 
-                                    key={p.id} 
-                                    className={`ac-paciente-item ${seleccion.paciente_id === p.id ? 'seleccionado' : ''}`}
-                                    onClick={() => setSeleccion(s => ({ 
-                                        ...s, 
-                                        paciente_id: p.id, 
-                                        paciente_nombre: `${p.nombre} ${p.apellido}` 
-                                    }))}
-                                >
-                                    <div className="ac-pac-avatar">{p.nombre[0]}</div>
-                                    <div className="ac-pac-info">
-                                        <p className="ac-pac-nombre">{p.nombre} {p.apellido}</p>
-                                        <p className="ac-pac-detalle">
-                                            {p.cedula || 'Sin cédula'} · {p.telefono || 'Sin tel.'}
-                                        </p>
-                                    </div>
-                                    {seleccion.paciente_id === p.id && <span className="ac-check">✓</span>}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    <PasoSeleccionPaciente 
+                        busqueda={busquedaPaciente}
+                        setBusqueda={setBusquedaPaciente}
+                        pacientes={pacientesFiltrados}
+                        seleccionId={seleccion.paciente_id}
+                        onSelect={p => setSeleccion(s => ({ 
+                            ...s, 
+                            paciente_id: p.id, 
+                            paciente_nombre: `${p.nombre} ${p.apellido}` 
+                        }))}
+                    />
                 )}
 
-                {/* PASO Fecha/Hora */}
                 {((rolCreador === 'recepcionista' && paso === 2) || (rolCreador === 'paciente' && paso === 1)) && (
-                    <div className="ac-paso">
-                        <h2 className="ac-paso-titulo">Fecha y horario</h2>
-                        {rolCreador === 'recepcionista' && seleccion.paciente_nombre && (
-                            <div className="ac-paciente-seleccionado">
-                                <div className="ac-pac-avatar">{seleccion.paciente_nombre[0]}</div>
-                                <span>{seleccion.paciente_nombre}</span>
-                            </div>
-                        )}
-
-                        <p className="ac-sub-label">Selecciona una fecha</p>
-                        <div className="ac-fechas">
-                            {proximosDias().map(d => {
-                                const iso = d.toISOString().split('T')[0]
-                                return (
-                                    <div 
-                                        key={iso} 
-                                        className={`ac-fecha-item ${seleccion.fecha === iso ? 'seleccionado' : ''}`}
-                                        onClick={() => setSeleccion(s => ({ ...s, fecha: iso, hora: '' }))}
-                                    >
-                                        <span className="ac-fecha-dia">{diasSemana[d.getDay()]}</span>
-                                        <span className="ac-fecha-num">{d.getDate()}</span>
-                                        <span className="ac-fecha-mes">{meses[d.getMonth()]}</span>
-                                    </div>
-                                )
-                            })}
-                        </div>
-
-                        {seleccion.fecha && (
-                            <>
-                                <p className="ac-sub-label">Horarios disponibles</p>
-                                <div className="ac-horarios">
-                                    {horarios.map(h => {
-                                        const ocupado = horaOcupada(h)
-                                        return (
-                                            <div 
-                                                key={h}
-                                                className={`ac-hora ${seleccion.hora === h ? 'seleccionado' : ''} ${ocupado ? 'ocupado' : ''}`}
-                                                onClick={() => !ocupado && setSeleccion(s => ({ ...s, hora: h }))}
-                                            >
-                                                {h}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                                <div className="ac-leyenda">
-                                    <span className="ac-ley-item">
-                                        <span className="ac-ley-circulo disponible" /> Disponible
-                                    </span>
-                                    <span className="ac-ley-item">
-                                        <span className="ac-ley-circulo ocupado" /> Ocupado
-                                    </span>
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    <PasoFechaHora 
+                        rolCreador={rolCreador}
+                        pacienteNombre={seleccion.paciente_nombre}
+                        fechaSeleccionada={seleccion.fecha}
+                        horaSeleccionada={seleccion.hora}
+                        proximosDias={proximosDias()}
+                        diasSemana={diasSemana}
+                        meses={meses}
+                        horarios={horarios}
+                        onSelectFecha={iso => setSeleccion(s => ({ ...s, fecha: iso, hora: '' }))}
+                        onSelectHora={h => setSeleccion(s => ({ ...s, hora: h }))}
+                        horaOcupada={horaOcupada}
+                    />
                 )}
 
-                {/* PASO Detalles */}
                 {((rolCreador === 'recepcionista' && paso === 3) || (rolCreador === 'paciente' && paso === 2)) && (
-                    <div className="ac-paso">
-                        <h2 className="ac-paso-titulo">Odontólogo</h2>
-                        <div className="ac-lista-od">
-                            {odontologos.map(o => (
-                                <div 
-                                    key={o.id} 
-                                    className={`ac-od-item ${seleccion.odontologo_id === o.id ? 'seleccionado' : ''}`}
-                                    onClick={() => setSeleccion(s => ({ 
-                                        ...s, 
-                                        odontologo_id: o.id, 
-                                        odontologo_nombre: `Dr. ${o.usuarios?.nombre} ${o.usuarios?.apellido}` 
-                                    }))}
-                                >
-                                    <div className="ac-od-avatar">👤</div>
-                                    <div>
-                                        <p className="ac-od-nombre">Dr. {o.usuarios?.nombre} {o.usuarios?.apellido}</p>
-                                        <p className="ac-od-esp">{o.especialidad}</p>
-                                    </div>
-                                    {seleccion.odontologo_id === o.id && <span className="ac-check">✓</span>}
-                                </div>
-                            ))}
-                        </div>
-
-                        <h2 className="ac-paso-titulo" style={{ marginTop: '1rem' }}>Tipo de tratamiento</h2>
-                        <div className="ac-servicios">
-                            {servicios.map(s => (
-                                <div 
-                                    key={s.id} 
-                                    className={`ac-servicio-tag ${seleccion.servicio_id === s.id ? 'seleccionado' : ''}`}
-                                    onClick={() => setSeleccion(sel => ({ 
-                                        ...sel, 
-                                        servicio_id: s.id, 
-                                        servicio_nombre: s.nombre 
-                                    }))}
-                                >
-                                    {s.nombre}
-                                </div>
-                            ))}
-                        </div>
-
-                        <h2 className="ac-paso-titulo" style={{ marginTop: '1rem' }}>Notas adicionales (opcional)</h2>
-                        <textarea 
-                            className="ac-notas" 
-                            placeholder="Describe brevemente el motivo de tu consulta..." 
-                            value={seleccion.notas} 
-                            onChange={e => setSeleccion(s => ({ ...s, notas: e.target.value }))} 
-                            rows={3} 
-                        />
-                    </div>
+                    <PasoDetalles 
+                        odontologos={odontologos}
+                        servicios={servicios}
+                        odontologoId={seleccion.odontologo_id}
+                        servicioId={seleccion.servicio_id}
+                        notas={seleccion.notas}
+                        onSelectOdontologo={o => setSeleccion(s => ({ 
+                            ...s, 
+                            odontologo_id: o.id, 
+                            odontologo_nombre: `Dr. ${o.usuarios?.nombre} ${o.usuarios?.apellido}` 
+                        }))}
+                        onSelectServicio={s => setSeleccion(sel => ({ 
+                            ...sel, 
+                            servicio_id: s.id, 
+                            servicio_nombre: s.nombre 
+                        }))}
+                        onNotasChange={v => setSeleccion(s => ({ ...s, notas: v }))}
+                    />
                 )}
 
-                {/* PASO Confirmar */}
                 {((rolCreador === 'recepcionista' && paso === 4) || (rolCreador === 'paciente' && paso === 3)) && (
-                    <div className="ac-paso">
-                        <h2 className="ac-paso-titulo">
-                            {rolCreador === 'paciente' ? 'Resumen de tu cita' : 'Confirmar cita'}
-                        </h2>
-                        <div className="ac-resumen">
-                            {rolCreador === 'recepcionista' && (
-                                <div className="ac-resumen-item">
-                                    <span className="ac-res-icon">👤</span>
-                                    <div>
-                                        <p className="ac-res-label">Paciente</p>
-                                        <p className="ac-res-valor">{seleccion.paciente_nombre}</p>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="ac-resumen-item">
-                                <span className="ac-res-icon">📅</span>
-                                <div>
-                                    <p className="ac-res-label">Fecha</p>
-                                    <p className="ac-res-valor">{seleccion.fecha}</p>
-                                </div>
-                            </div>
-                            <div className="ac-resumen-item">
-                                <span className="ac-res-icon">⏰</span>
-                                <div>
-                                    <p className="ac-res-label">Hora</p>
-                                    <p className="ac-res-valor">{seleccion.hora}</p>
-                                </div>
-                            </div>
-                            <div className="ac-resumen-item">
-                                <span className="ac-res-icon">🦷</span>
-                                <div>
-                                    <p className="ac-res-label">Odontólogo</p>
-                                    <p className="ac-res-valor">{seleccion.odontologo_nombre || 'No seleccionado'}</p>
-                                </div>
-                            </div>
-                            {seleccion.servicio_nombre && (
-                                <div className="ac-resumen-item">
-                                    <span className="ac-res-icon">💊</span>
-                                    <div>
-                                        <p className="ac-res-label">Tratamiento</p>
-                                        <p className="ac-res-valor">{seleccion.servicio_nombre}</p>
-                                    </div>
-                                </div>
-                            )}
-                            {seleccion.notas && (
-                                <div className="ac-resumen-item">
-                                    <span className="ac-res-icon">📝</span>
-                                    <div>
-                                        <p className="ac-res-label">Notas</p>
-                                        <p className="ac-res-valor">{seleccion.notas}</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {rolCreador === 'paciente' && (
-                            <div className="ac-aviso">
-                                <span>ℹ️</span>
-                                <p>Recibirás una confirmación. Si necesitas cancelar, hazlo con al menos 24 horas de anticipación.</p>
-                            </div>
-                        )}
-
-                        {error && <p className="ac-error">{error}</p>}
-                    </div>
+                    <PasoResumen 
+                        rolCreador={rolCreador}
+                        seleccion={seleccion}
+                        error={error}
+                    />
                 )}
             </div>
 
-            {/* Botones de navegación */}
             <div className="ac-botones">
                 {paso > 1 && (
                     <button className="ac-btn-anterior" onClick={() => setPaso(p => p - 1)}>

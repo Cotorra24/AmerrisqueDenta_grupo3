@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { supabase } from '../../database/supabaseconfig'
-import './FormularioLogin.css'
 
 export default function FormularioLogin() {
     const [email, setEmail] = useState('')

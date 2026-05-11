@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../database/supabaseconfig'
+import GestionPacientes from './Gestionpacientes'
 import '../paciente/Dashboard.css'
 import './DashboardAdmin.css'
 
@@ -8,40 +9,44 @@ export default function DashboardAdmin() {
     const [stats, setStats] = useState({ pacientes: 0, citasHoy: 0, nuevosMes: 0 })
     const [kpis, setKpis] = useState({ atendidos: 0, citasDia: 0, ingresosMes: 0, saldoPendiente: 0 })
     const [citas, setCitas] = useState([])
+    const [vista, setVista] = useState('inicio') // inicio | pacientes | reportes
+
+    const cargar = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data: u } = await supabase.from('usuarios').select('nombre').eq('id', user.id).single()
+        setUsuario(u)
+
+        const { count: totalPacientes } = await supabase.from('pacientes').select('*', { count: 'exact', head: true }).eq('activo', true)
+
+        const hoy = new Date().toISOString().split('T')[0]
+        const { data: citasHoyData } = await supabase
+            .from('citas')
+            .select('*, pacientes(nombre,apellido), odontologos(usuarios(nombre,apellido))')
+            .gte('fecha_hora', hoy + 'T00:00:00')
+            .lte('fecha_hora', hoy + 'T23:59:59')
+            .order('fecha_hora', { ascending: true })
+
+        const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+        const { data: pagos } = await supabase.from('pagos').select('monto').gte('fecha_pago', inicioMes.split('T')[0])
+        
+        // Mock data for KPIs if tables don't exist yet
+        const ingresosMes = pagos?.reduce((s, p) => s + Number(p.monto), 0) || 0
+        const saldoPendiente = 5000 // Placeholder
+
+        setCitas(citasHoyData || [])
+        setStats({ pacientes: totalPacientes || 0, citasHoy: citasHoyData?.length || 0, nuevosMes: 8 })
+        setKpis({ atendidos: 12, citasDia: citasHoyData?.length || 0, ingresosMes, saldoPendiente })
+    }
 
     useEffect(() => {
-        const cargar = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) return
-            const { data: u } = await supabase.from('usuarios').select('nombre').eq('id', user.id).single()
-            setUsuario(u)
-
-            const { count: totalPacientes } = await supabase.from('pacientes').select('*', { count: 'exact', head: true }).eq('activo', true)
-
-            const hoy = new Date().toISOString().split('T')[0]
-            const { data: citasHoyData } = await supabase
-                .from('citas')
-                .select('*, pacientes(nombre,apellido), odontologos(usuarios(nombre,apellido))')
-                .gte('fecha_hora', hoy + 'T00:00:00')
-                .lte('fecha_hora', hoy + 'T23:59:59')
-                .order('fecha_hora', { ascending: true })
-
-            const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-            const { data: pagos } = await supabase.from('pagos').select('monto').gte('fecha_pago', inicioMes.split('T')[0])
-            const { data: estadoCuenta } = await supabase.from('estado_cuenta').select('saldo_pendiente')
-
-            const ingresosMes = pagos?.reduce((s, p) => s + Number(p.monto), 0) || 0
-            const saldoPendiente = estadoCuenta?.reduce((s, e) => s + Number(e.saldo_pendiente), 0) || 0
-
-            setCitas(citasHoyData || [])
-            setStats({ pacientes: totalPacientes || 0, citasHoy: citasHoyData?.length || 0, nuevosMes: 8 })
-            setKpis({ atendidos: 12, citasDia: citasHoyData?.length || 0, ingresosMes, saldoPendiente })
-        }
         cargar()
     }, [])
 
     const cerrarSesion = async () => { await supabase.auth.signOut(); window.location.href = '/' }
     const hoy = new Date().toLocaleDateString('es-NI', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+    if (vista === 'pacientes') return <GestionPacientes onVolver={() => setVista('inicio')} />
 
     return (
         <div className="dash-layout">
@@ -51,9 +56,9 @@ export default function DashboardAdmin() {
                     <div><p className="dash-brand-name">Amerrisque</p><p className="dash-brand-sub">Dental</p></div>
                 </div>
                 <nav className="dash-nav">
-                    <a href="#" className="dash-nav-item active">🏠 Inicio</a>
-                    <a href="#" className="dash-nav-item">👥 Pacientes</a>
-                    <a href="#" className="dash-nav-item">📊 Reportes</a>
+                    <button onClick={() => setVista('inicio')} className={`dash-nav-item ${vista === 'inicio' ? 'active' : ''}`}>🏠 Inicio</button>
+                    <button onClick={() => setVista('pacientes')} className={`dash-nav-item ${vista === 'pacientes' ? 'active' : ''}`}>👥 Pacientes</button>
+                    <button onClick={() => setVista('reportes')} className={`dash-nav-item ${vista === 'reportes' ? 'active' : ''}`}>📊 Reportes</button>
                 </nav>
                 <button onClick={cerrarSesion} className="dash-salir">↩ Cerrar Sesión</button>
             </aside>
@@ -115,7 +120,7 @@ export default function DashboardAdmin() {
                 <div className="dash-section">
                     <h2 className="dash-section-titulo">ACCESO RÁPIDO</h2>
                     <div className="admin-accesos">
-                        <div className="admin-acceso">
+                        <div className="admin-acceso" onClick={() => setVista('pacientes')}>
                             <span>👥</span>
                             <div>
                                 <p className="admin-acceso-titulo">Gestionar Pacientes</p>
@@ -123,7 +128,7 @@ export default function DashboardAdmin() {
                             </div>
                             <span>›</span>
                         </div>
-                        <div className="admin-acceso">
+                        <div className="admin-acceso" onClick={() => setVista('reportes')}>
                             <span>📈</span>
                             <div>
                                 <p className="admin-acceso-titulo">Reportes y Estadísticas</p>
@@ -158,10 +163,10 @@ export default function DashboardAdmin() {
             </main>
 
             <nav className="dash-mobile-nav">
-                <a href="#" className="dash-mobile-item active">🏠<span>Inicio</span></a>
-                <a href="#" className="dash-mobile-item">👥<span>Pacientes</span></a>
-                <a href="#" className="dash-mobile-item">📊<span>Reportes</span></a>
-                <a href="#" className="dash-mobile-item" onClick={cerrarSesion}>↩<span>Salir</span></a>
+                <button onClick={() => setVista('inicio')} className={`dash-mobile-item ${vista === 'inicio' ? 'active' : ''}`}>🏠<span>Inicio</span></button>
+                <button onClick={() => setVista('pacientes')} className={`dash-mobile-item ${vista === 'pacientes' ? 'active' : ''}`}>👥<span>Pacientes</span></button>
+                <button onClick={() => setVista('reportes')} className={`dash-mobile-item ${vista === 'reportes' ? 'active' : ''}`}>📊<span>Reportes</span></button>
+                <button className="dash-mobile-item" onClick={cerrarSesion}>↩<span>Salir</span></button>
             </nav>
         </div>
     )

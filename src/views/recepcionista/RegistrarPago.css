@@ -1,0 +1,148 @@
+.rp-wrapper {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+}
+
+.rp-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.rp-volver {
+    background: #f3f4f6;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.rp-titulo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.rp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.rp-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rp-section label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.rp-input, .rp-select {
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.rp-lista {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.rp-item {
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+}
+
+.rp-item:hover {
+    background: #f9fafb;
+}
+
+.rp-paciente-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+}
+
+.rp-paciente-card span {
+    font-size: 1.5rem;
+}
+
+.rp-paciente-card div {
+    flex: 1;
+}
+
+.rp-paciente-card p {
+    margin: 0;
+}
+
+.rp-paciente-card button {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rp-metodos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.rp-metodo-btn {
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.rp-metodo-btn.active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+.rp-btn-guardar {
+    margin-top: 10px;
+    padding: 15px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.rp-btn-guardar:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+}
+
+.rp-error {
+    color: #dc2626;
+    font-size: 0.85rem;
+    text-align: center;
+}

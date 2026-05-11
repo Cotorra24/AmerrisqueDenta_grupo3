@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../database/supabaseconfig'
-import './GestionPacientes.css'
+import './Gestionpacientes.css'
 
 export default function GestionPacientes({ onVolver }) {
     const [pacientes, setPacientes] = useState([])

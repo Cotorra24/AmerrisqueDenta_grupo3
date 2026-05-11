@@ -1,43 +1,52 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../database/supabaseconfig'
+import AgendarCita from './Agendarcita'
+import GestionPacientes from './Gestionpacientes'
+import RegistrarPago from './RegistrarPago'
 import '../paciente/Dashboard.css'
 
 export default function DashboardRecepcionista() {
     const [usuario, setUsuario] = useState(null)
     const [citas, setCitas] = useState([])
     const [stats, setStats] = useState({ citasHoy: 0, pendientes: 0, cobradoHoy: 0 })
+    const [vista, setVista] = useState('inicio') // inicio | pacientes | agenda | pagos
+
+    const cargar = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data: u } = await supabase.from('usuarios').select('nombre').eq('id', user.id).single()
+        setUsuario(u)
+
+        const hoy = new Date().toISOString().split('T')[0]
+        const { data: citasData } = await supabase
+            .from('citas')
+            .select('*, pacientes(nombre, apellido), servicios(nombre, costo), odontologos(usuarios(nombre,apellido))')
+            .gte('fecha_hora', hoy + 'T00:00:00')
+            .lte('fecha_hora', hoy + 'T23:59:59')
+            .order('fecha_hora', { ascending: true })
+
+        setCitas(citasData || [])
+
+        const { data: pagosHoy } = await supabase
+            .from('pagos').select('monto').gte('fecha_pago', hoy).lte('fecha_pago', hoy)
+
+        setStats({
+            citasHoy: citasData?.length || 0,
+            pendientes: citasData?.filter(c => c.estado === 'pendiente').length || 0,
+            cobradoHoy: pagosHoy?.reduce((s, p) => s + Number(p.monto), 0) || 0,
+        })
+    }
 
     useEffect(() => {
-        const cargar = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) return
-            const { data: u } = await supabase.from('usuarios').select('nombre').eq('id', user.id).single()
-            setUsuario(u)
-
-            const hoy = new Date().toISOString().split('T')[0]
-            const { data: citasData } = await supabase
-                .from('citas')
-                .select('*, pacientes(nombre, apellido), servicios(nombre, costo), odontologos(usuarios(nombre,apellido))')
-                .gte('fecha_hora', hoy + 'T00:00:00')
-                .lte('fecha_hora', hoy + 'T23:59:59')
-                .order('fecha_hora', { ascending: true })
-
-            setCitas(citasData || [])
-
-            const { data: pagosHoy } = await supabase
-                .from('pagos').select('monto').gte('fecha_pago', hoy).lte('fecha_pago', hoy)
-
-            setStats({
-                citasHoy: citasData?.length || 0,
-                pendientes: citasData?.filter(c => c.estado === 'pendiente').length || 0,
-                cobradoHoy: pagosHoy?.reduce((s, p) => s + Number(p.monto), 0) || 0,
-            })
-        }
         cargar()
     }, [])
 
     const cerrarSesion = async () => { await supabase.auth.signOut(); window.location.href = '/' }
     const hoy = new Date().toLocaleDateString('es-NI', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+    if (vista === 'agendar') return <AgendarCita onVolver={() => setVista('inicio')} onExito={() => { setVista('inicio'); cargar(); }} />
+    if (vista === 'pacientes') return <GestionPacientes onVolver={() => setVista('inicio')} />
+    if (vista === 'pagos') return <RegistrarPago onVolver={() => setVista('inicio')} onExito={() => { setVista('inicio'); cargar(); }} />
 
     return (
         <div className="dash-layout">
@@ -47,10 +56,10 @@ export default function DashboardRecepcionista() {
                     <div><p className="dash-brand-name">Amerrisque</p><p className="dash-brand-sub">Dental</p></div>
                 </div>
                 <nav className="dash-nav">
-                    <a href="#" className="dash-nav-item active">🏠 Inicio</a>
-                    <a href="#" className="dash-nav-item">👥 Pacientes</a>
-                    <a href="#" className="dash-nav-item">📅 Agenda</a>
-                    <a href="#" className="dash-nav-item">💳 Pagos</a>
+                    <button onClick={() => setVista('inicio')} className={`dash-nav-item ${vista === 'inicio' ? 'active' : ''}`}>🏠 Inicio</button>
+                    <button onClick={() => setVista('pacientes')} className={`dash-nav-item ${vista === 'pacientes' ? 'active' : ''}`}>👥 Pacientes</button>
+                    <button onClick={() => setVista('agendar')} className={`dash-nav-item ${vista === 'agendar' ? 'active' : ''}`}>📅 Agenda</button>
+                    <button onClick={() => setVista('pagos')} className={`dash-nav-item ${vista === 'pagos' ? 'active' : ''}`}>💳 Pagos</button>
                 </nav>
                 <button onClick={cerrarSesion} className="dash-salir">↩ Cerrar Sesión</button>
             </aside>
@@ -81,10 +90,10 @@ export default function DashboardRecepcionista() {
                 <div className="dash-section">
                     <h2 className="dash-section-titulo">ACCIONES RÁPIDAS</h2>
                     <div className="dash-acciones-recep">
-                        <div className="dash-accion-recep azul-claro">👤+ Registrar Paciente</div>
-                        <div className="dash-accion-recep verde-claro">📅 Agendar Cita</div>
-                        <div className="dash-accion-recep amarillo-claro">💳 Registrar Pago</div>
-                        <div className="dash-accion-recep morado-claro">👥 Ver Pacientes</div>
+                        <div className="dash-accion-recep azul-claro" onClick={() => setVista('pacientes')}>👤+ Registrar Paciente</div>
+                        <div className="dash-accion-recep verde-claro" onClick={() => setVista('agendar')}>📅 Agendar Cita</div>
+                        <div className="dash-accion-recep amarillo-claro" onClick={() => setVista('pagos')}>💳 Registrar Pago</div>
+                        <div className="dash-accion-recep morado-claro" onClick={() => setVista('pacientes')}>👥 Ver Pacientes</div>
                     </div>
                 </div>
 
@@ -92,7 +101,7 @@ export default function DashboardRecepcionista() {
                 <div className="dash-section">
                     <div className="dash-section-header">
                         <h2 className="dash-section-titulo">AGENDA DE HOY</h2>
-                        <a href="#" className="dash-ver-todas">Ver agenda completa</a>
+                        <button onClick={() => setVista('agendar')} className="dash-ver-todas">Ver agenda completa</button>
                     </div>
                     {citas.length === 0 ? (
                         <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>No hay citas programadas para hoy</p>
@@ -113,7 +122,7 @@ export default function DashboardRecepcionista() {
                 <div className="dash-section">
                     <div className="dash-section-header">
                         <h2 className="dash-section-titulo">PAGOS DE HOY</h2>
-                        <a href="#" className="dash-ver-todas">Ver todos</a>
+                        <button onClick={() => setVista('pagos')} className="dash-ver-todas">Ver todos</button>
                     </div>
                     <div className="dash-pagos-card">
                         <p className="dash-pagos-label">💵 Ingresos del día</p>
@@ -123,11 +132,11 @@ export default function DashboardRecepcionista() {
             </main>
 
             <nav className="dash-mobile-nav">
-                <a href="#" className="dash-mobile-item active">🏠<span>Inicio</span></a>
-                <a href="#" className="dash-mobile-item">👥<span>Pacientes</span></a>
-                <a href="#" className="dash-mobile-item">📅<span>Agenda</span></a>
-                <a href="#" className="dash-mobile-item">💳<span>Pagos</span></a>
-                <a href="#" className="dash-mobile-item" onClick={cerrarSesion}>↩<span>Salir</span></a>
+                <button onClick={() => setVista('inicio')} className={`dash-mobile-item ${vista === 'inicio' ? 'active' : ''}`}>🏠<span>Inicio</span></button>
+                <button onClick={() => setVista('pacientes')} className={`dash-mobile-item ${vista === 'pacientes' ? 'active' : ''}`}>👥<span>Pacientes</span></button>
+                <button onClick={() => setVista('agendar')} className={`dash-mobile-item ${vista === 'agendar' ? 'active' : ''}`}>📅<span>Agenda</span></button>
+                <button onClick={() => setVista('pagos')} className={`dash-mobile-item ${vista === 'pagos' ? 'active' : ''}`}>💳<span>Pagos</span></button>
+                <button className="dash-mobile-item" onClick={cerrarSesion}>↩<span>Salir</span></button>
             </nav>
         </div>
     )
