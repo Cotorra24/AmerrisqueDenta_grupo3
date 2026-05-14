@@ -1,171 +1,138 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../database/supabaseconfig'
-import PacienteSelector from '../../components/recepcionista/PacienteSelector'
-import PacienteCard from '../../components/recepcionista/PacienteCard'
-import FormularioPago from '../../components/recepcionista/FormularioPago'
+import './RegistrarPago.css'
 
-export default function RegistrarPago({ onVolver, onExito }) {
+export default function RegistrarPago({ onExito }) {
     const [pacientes, setPacientes] = useState([])
-    const [busqueda, setBusqueda] = useState('')
-    const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null)
-    const [servicios, setServicios] = useState([])
     const [tratamientos, setTratamientos] = useState([])
-    const [tratamientoSeleccionado, setTratamientoSeleccionado] = useState(null)
-    const [servicioSeleccionado, setServicioSeleccionado] = useState(null)
-    const [monto, setMonto] = useState('')
-    const [metodoPago, setMetodoPago] = useState('efectivo')
-    const [notas, setNotas] = useState('')
-    const [guardando, setGuardando] = useState(false)
-    const [error, setError] = useState(null)
+    const [busqueda, setBusqueda] = useState('')
+    const [seleccion, setSeleccion] = useState({
+        paciente_id: null,
+        tratamiento_id: null,
+        monto: '',
+        metodo_pago: 'efectivo',
+        notas: ''
+    })
+    const [cargando, setCargando] = useState(false)
 
     useEffect(() => {
-        const cargarDatos = async () => {
-            const { data: pacs } = await supabase.from('pacientes').select('id, nombre, apellido, cedula').eq('activo', true).order('nombre')
-            setPacientes(pacs || [])
-
-            const { data: servs } = await supabase.from('servicios').select('*').eq('activo', true).order('nombre')
-            setServicios(servs || [])
+        const fetchPacientes = async () => {
+            const { data } = await supabase.from('pacientes').select('*').eq('activo', true)
+            setPacientes(data || [])
         }
-        cargarDatos()
+        fetchPacientes()
     }, [])
 
     useEffect(() => {
-        if (!pacienteSeleccionado) {
-            setTratamientos([])
-            return
-        }
-
-        const cargarTratamientos = async () => {
-            const { data, error } = await supabase
+        if (!seleccion.paciente_id) return
+        const fetchTratamientos = async () => {
+            // Buscar tratamientos completados del paciente que no estén cancelados
+            const { data } = await supabase
                 .from('tratamientos')
-                .select(`
-                    id, 
-                    descripcion, 
-                    costo, 
-                    estado,
-                    servicio:servicio_id(nombre),
-                    historial:historial_id(paciente_id)
-                `)
-                .eq('historial.paciente_id', pacienteSeleccionado.id)
-                .neq('estado', 'completado')
-
-            // Supabase filtering on joined tables can be tricky in some versions/policies, 
-            // but let's assume standard join or filter manually if needed.
-            // Actually, the above filter might fail if not using postgrest 9+. 
-            // Better approach: fetch historiales first or use a join that works.
+                .select('*, historiales_clinicos!inner(paciente_id)')
+                .eq('historiales_clinicos.paciente_id', seleccion.paciente_id)
+                .neq('estado', 'cancelado')
             
-            const { data: treatments } = await supabase
-                .from('tratamientos')
-                .select('*, servicio:servicio_id(nombre)')
-                .innerJoin('historiales_clinicos', 'historial_id', 'id')
-                .eq('historiales_clinicos.paciente_id', pacienteSeleccionado.id)
-                .neq('estado', 'completado')
-            
-            setTratamientos(treatments || [])
+            setTratamientos(data || [])
         }
-        // Simplified query for reliability
-        const cargarTratamientosSimple = async () => {
-             const { data: historiales } = await supabase
-                .from('historiales_clinicos')
-                .select('id')
-                .eq('paciente_id', pacienteSeleccionado.id)
-            
-            if (historiales?.length > 0) {
-                const ids = historiales.map(h => h.id)
-                const { data: treats } = await supabase
-                    .from('tratamientos')
-                    .select('*, servicio:servicio_id(nombre)')
-                    .in('historial_id', ids)
-                    .neq('estado', 'pagado') // Assuming there is a state or just filter by pending
-                setTratamientos(treats || [])
-            }
+        fetchTratamientos()
+    }, [seleccion.paciente_id])
+
+    const handlePago = async (e) => {
+        e.preventDefault()
+        setCargando(true)
+
+        const { error } = await supabase.from('pagos').insert([{
+            paciente_id: seleccion.paciente_id,
+            tratamiento_id: seleccion.tratamiento_id || null,
+            monto: parseFloat(seleccion.monto),
+            metodo_pago: seleccion.metodo_pago,
+            notas: seleccion.notas,
+            fecha_pago: new Date().toISOString().split('T')[0]
+        }])
+
+        if (error) {
+            alert('Error al registrar pago: ' + error.message)
+        } else {
+            alert('Pago registrado correctamente')
+            onExito()
         }
-        cargarTratamientosSimple()
-    }, [pacienteSeleccionado])
-
-    const pacientesFiltrados = pacientes.filter(p => 
-        `${p.nombre} ${p.apellido}`.toLowerCase().includes(busqueda.toLowerCase()) ||
-        p.cedula?.toLowerCase().includes(busqueda.toLowerCase())
-    )
-
-    const handleSelectServicio = (s) => {
-        setServicioSeleccionado(s)
-        setMonto(s.costo)
+        setCargando(false)
     }
 
-    const guardarPago = async () => {
-        if (!pacienteSeleccionado || !monto || !metodoPago) {
-            setError('Faltan campos obligatorios')
-            return
-        }
-
-        setGuardando(true)
-        setError(null)
-        try {
-            const { data: { user } } = await supabase.auth.getUser()
-            
-            const { error: err } = await supabase.from('pagos').insert([{
-                paciente_id: pacienteSeleccionado.id,
-                tratamiento_id: tratamientoSeleccionado?.id || null,
-                monto: Number(monto),
-                metodo_pago: metodoPago,
-                notas: notas || `Pago por ${tratamientoSeleccionado?.servicio?.nombre || servicioSeleccionado?.nombre || 'consulta'}`,
-                registrado_por: user.id,
-                fecha_pago: new Date().toISOString().split('T')[0]
-            }])
-
-            if (err) throw err
-            onExito && onExito()
-        } catch (err) {
-            console.error(err)
-            setError('Error al registrar el pago')
-        } finally {
-            setGuardando(false)
-        }
-    }
+    const filtrados = pacientes.filter(p => p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || p.cedula?.includes(busqueda))
 
     return (
-        <div className="rp-wrapper">
-            <div className="rp-header">
-                <button className="rp-volver" onClick={onVolver}>←</button>
-                <h1 className="rp-titulo">Registrar Pago</h1>
-            </div>
+        <div className="rp-container">
+            <div className="rp-card">
+                <h2>Registrar Nuevo Pago</h2>
+                <form onSubmit={handlePago} className="rp-form">
+                    <label>Buscar Paciente:</label>
+                    <input 
+                        type="text" 
+                        placeholder="Nombre o cédula..." 
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                    />
+                    <select 
+                        required
+                        value={seleccion.paciente_id || ''} 
+                        onChange={(e) => setSeleccion({...seleccion, paciente_id: parseInt(e.target.value), tratamiento_id: null})}
+                    >
+                        <option value="">Seleccione al paciente...</option>
+                        {filtrados.map(p => (
+                            <option key={p.id} value={p.id}>{p.nombre} {p.apellido} - {p.cedula}</option>
+                        ))}
+                    </select>
 
-            <div className="rp-form">
-                {!pacienteSeleccionado ? (
-                    <PacienteSelector 
-                        busqueda={busqueda}
-                        setBusqueda={setBusqueda}
-                        pacientesFiltrados={pacientesFiltrados}
-                        onSelectPaciente={setPacienteSeleccionado}
-                    />
-                ) : (
-                    <PacienteCard 
-                        paciente={pacienteSeleccionado}
-                        onCambiar={() => setPacienteSeleccionado(null)}
-                    />
-                )}
+                    {seleccion.paciente_id && (
+                        <>
+                            <label>Tratamiento a Pagar (Opcional):</label>
+                            <select 
+                                value={seleccion.tratamiento_id || ''} 
+                                onChange={(e) => {
+                                    const t = tratamientos.find(tr => tr.id === parseInt(e.target.value))
+                                    setSeleccion({...seleccion, tratamiento_id: parseInt(e.target.value), monto: t ? t.costo : ''})
+                                }}
+                            >
+                                <option value="">Abono general (sin tratamiento específico)</option>
+                                {tratamientos.map(t => (
+                                    <option key={t.id} value={t.id}>{t.descripcion} (C$ {t.costo})</option>
+                                ))}
+                            </select>
+                        </>
+                    )}
 
-                {pacienteSeleccionado && (
-                    <FormularioPago 
-                        servicios={servicios}
-                        tratamientos={tratamientos}
-                        onSelectServicio={handleSelectServicio}
-                        onSelectTratamiento={t => {
-                            setTratamientoSeleccionado(t)
-                            setMonto(t.costo)
-                        }}
-                        monto={monto}
-                        setMonto={setMonto}
-                        metodoPago={metodoPago}
-                        setMetodoPago={setMetodoPago}
-                        notas={notas}
-                        setNotas={setNotas}
-                        error={error}
-                        guardando={guardando}
-                        onGuardar={guardarPago}
+                    <label>Monto a pagar (C$):</label>
+                    <input 
+                        type="number" 
+                        required 
+                        placeholder="0.00"
+                        value={seleccion.monto}
+                        onChange={(e) => setSeleccion({...seleccion, monto: e.target.value})}
                     />
-                )}
+
+                    <label>Método de Pago:</label>
+                    <select 
+                        value={seleccion.metodo_pago}
+                        onChange={(e) => setSeleccion({...seleccion, metodo_pago: e.target.value})}
+                    >
+                        <option value="efectivo">Efectivo</option>
+                        <option value="tarjeta">Tarjeta</option>
+                        <option value="transferencia">Transferencia</option>
+                    </select>
+
+                    <label>Notas:</label>
+                    <textarea 
+                        placeholder="Número de factura o referencia..."
+                        value={seleccion.notas}
+                        onChange={(e) => setSeleccion({...seleccion, notas: e.target.value})}
+                    />
+
+                    <button type="submit" disabled={cargando || !seleccion.paciente_id}>
+                        {cargando ? 'Registrando...' : 'Registrar Pago'}
+                    </button>
+                </form>
             </div>
         </div>
     )

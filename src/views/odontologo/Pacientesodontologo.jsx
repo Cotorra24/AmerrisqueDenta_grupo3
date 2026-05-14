@@ -1,82 +1,65 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../database/supabaseconfig'
-import './PacientesOdontologo.css'
+import './Pacientesodontologo.css'
 
-export default function PacientesOdontologo({ onVolver }) {
+export default function PacientesOdontologo({ dentistaId }) {
     const [pacientes, setPacientes] = useState([])
     const [busqueda, setBusqueda] = useState('')
-    const [filtro, setFiltro] = useState('todos')
-    const [cargando, setCargando] = useState(true)
 
     useEffect(() => {
-        const cargar = async () => {
+        if (!dentistaId) return
+        const fetchPacientes = async () => {
+            // Obtenemos los pacientes que tienen al menos una cita con este doctor
             const { data } = await supabase
-                .from('pacientes')
-                .select('id, nombre, apellido, cedula, telefono, fecha_nacimiento, activo, historiales_clinicos(id), tratamientos:historiales_clinicos(tratamientos(id))')
-                .eq('activo', true)
-                .order('nombre')
-            setPacientes(data || [])
-            setCargando(false)
+                .from('citas')
+                .select('pacientes(*)')
+                .eq('odontologo_id', dentistaId)
+            
+            // Filtrar duplicados de pacientes
+            const listaUnica = []
+            const idsVistos = new Set()
+            
+            data?.forEach(item => {
+                if (item.pacientes && !idsVistos.has(item.pacientes.id)) {
+                    idsVistos.add(item.pacientes.id)
+                    listaUnica.push(item.pacientes)
+                }
+            })
+
+            setPacientes(listaUnica)
         }
-        cargar()
-    }, [])
+        fetchPacientes()
+    }, [dentistaId])
 
-    const filtrados = pacientes.filter(p => {
-        const q = busqueda.toLowerCase()
-        return p.nombre?.toLowerCase().includes(q) || p.apellido?.toLowerCase().includes(q) || p.cedula?.toLowerCase().includes(q)
-    })
-
-    const calcEdad = (f) => { if (!f) return null; return new Date().getFullYear() - new Date(f).getFullYear() }
-    const iniciales = (n, a) => `${n?.[0] || ''}${a?.[0] || ''}`.toUpperCase()
-    const colores = ['#2563eb', '#059659', '#d97706', '#7c3aed', '#dc2626', '#0891b2']
-    const color = (id) => colores[id % colores.length]
+    const filtrados = pacientes.filter(p => 
+        p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
+        p.cedula?.includes(busqueda)
+    )
 
     return (
-        <div className="po-wrapper">
+        <div className="po-container">
             <div className="po-header">
-                {onVolver && <button className="po-volver" onClick={onVolver}>←</button>}
-                <div>
-                    <h1 className="po-titulo">Mis Pacientes</h1>
-                    <p className="po-subtitulo">{filtrados.length} paciente(s) encontrado(s)</p>
-                </div>
+                <input 
+                    type="text" 
+                    placeholder="Buscar entre mis pacientes..." 
+                    className="po-search"
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                />
             </div>
 
-            <div className="po-busqueda-wrap">
-                <div className="po-busqueda">
-                    <span>🔍</span>
-                    <input placeholder="Buscar paciente..." value={busqueda} onChange={e => setBusqueda(e.target.value)} />
-                </div>
-            </div>
-
-            <div className="po-filtros">
-                <button className={`po-filtro ${filtro === 'todos' ? 'activo' : ''}`} onClick={() => setFiltro('todos')}>Todos ({pacientes.length})</button>
-                <button className={`po-filtro ${filtro === 'historial' ? 'activo' : ''}`} onClick={() => setFiltro('historial')}>Con historial</button>
-            </div>
-
-            <div className="po-lista">
-                {cargando ? <div className="po-cargando"><div className="po-spinner" /></div>
-                    : filtrados.length === 0 ? <p className="po-vacio">No se encontraron pacientes</p>
-                        : filtrados.map(p => {
-                            const numHistoriales = p.historiales_clinicos?.length || 0
-                            return (
-                                <div key={p.id} className="po-item">
-                                    <div className="po-avatar" style={{ background: color(p.id) }}>{iniciales(p.nombre, p.apellido)}</div>
-                                    <div className="po-info">
-                                        <div className="po-nombre-row">
-                                            <span className="po-nombre">{p.nombre} {p.apellido}</span>
-                                            {numHistoriales > 0 && <span className="po-registros">{numHistoriales} registro(s)</span>}
-                                        </div>
-                                        <span className="po-detalle">{calcEdad(p.fecha_nacimiento) ? `${calcEdad(p.fecha_nacimiento)} años` : ''}{p.cedula ? ` · ${p.cedula}` : ''}</span>
-                                        <div className="po-acciones-item">
-                                            <button className="po-btn-historial">📋 Ver historial</button>
-                                            <button className="po-btn-consulta">📅 Nueva consulta</button>
-                                            {p.telefono && <span className="po-tel">📞 {p.telefono}</span>}
-                                        </div>
-                                    </div>
-                                    <span className="po-arrow">›</span>
-                                </div>
-                            )
-                        })}
+            <div className="po-list">
+                {filtrados.length > 0 ? filtrados.map(p => (
+                    <div key={p.id} className="po-card">
+                        <div className="po-avatar-big">{p.nombre[0]}</div>
+                        <h3>{p.nombre} {p.apellido}</h3>
+                        <p className="po-cedula">{p.cedula}</p>
+                        <div className="po-meta">
+                            <span>📞 {p.telefono || 'Sin tel'}</span>
+                            <span>📧 {p.email || 'Sin email'}</span>
+                        </div>
+                    </div>
+                )) : <p className="no-data">No se encontraron pacientes vinculados.</p>}
             </div>
         </div>
     )

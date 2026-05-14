@@ -1,205 +1,150 @@
-import { useState } from 'react'
-import { supabase } from '../../database/supabaseconfig'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../database/supabaseconfig';
+import '../../App.css';
 
-export default function FormularioLogin() {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [mostrarPassword, setMostrarPassword] = useState(false)
-    const [cargando, setCargando] = useState(false)
-    const [error, setError] = useState('')
+const FormularioLogin = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [cargando, setCargando] = useState(false);
+    const [mostrarPass, setMostrarPass] = useState(false);
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
-        e.preventDefault()
-        setCargando(true)
-        setError('')
-
-        const { data, error: authError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        })
-
-        if (authError) {
-            setError('Correo o contraseña incorrectos')
-            setCargando(false)
-            return
+        e.preventDefault();
+        setCargando(true);
+        
+        // 1. Intentar Login en Auth
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        
+        if (error) {
+            console.error('Error detallado de Supabase:', error);
+            let mensaje = 'Error de acceso: ' + error.message;
+            
+            if (error.status === 400) {
+                mensaje += '\n\nPosibles causas:\n1. El usuario no existe en Supabase > Auth.\n2. La contraseña es incorrecta.\n3. Debes confirmar tu email (revisa tu bandeja de entrada o desactiva "Confirm Email" en Supabase Auth Settings).';
+            }
+            
+            alert(mensaje);
+            setCargando(false);
+            return;
         }
 
-        // Obtener rol del usuario
-        const { data: usuario, error: userError } = await supabase
+        // 2. Buscar información en la tabla 'usuarios' (Español)
+        const { data: usuario, error: errorUser } = await supabase
             .from('usuarios')
-            .select('rol_id, primer_login, nombre')
+            .select('*, roles(nombre)')
             .eq('id', data.user.id)
-            .single()
+            .single();
 
-        if (userError || !usuario) {
-            setError('No se encontró información del usuario')
-            await supabase.auth.signOut()
-            setCargando(false)
-            return
+        if (errorUser || !usuario) {
+            console.log('Usuario no encontrado en la tabla usuarios, creando perfil por defecto...');
+            await supabase.from('usuarios').insert([
+                { id: data.user.id, email: data.user.email, nombre: data.user.email.split('@')[0], rol_id: 4 }
+            ]);
+            navigate('/paciente');
+        } else {
+            // Redirigir según el rol (1=admin, 2=doctor, 3=recep, 4=paciente)
+            const rolId = usuario.rol_id;
+            if (rolId === 1) navigate('/admin');
+            else if (rolId === 2) navigate('/odontologo');
+            else if (rolId === 3) navigate('/recepcionista');
+            else navigate('/paciente');
         }
 
-        // Redirigir según rol
-        const rutas = {
-            1: '/admin',
-            2: '/odontologo',
-            3: '/recepcionista',
-            4: '/paciente',
-        }
+        setCargando(false);
+    };
 
-        window.location.href = rutas[usuario.rol_id] || '/'
-    }
+    const rellenarCredenciales = (u, p) => {
+        setEmail(u);
+        setPassword(p);
+    };
 
     return (
         <div className="login-wrapper">
-            {/* Fondo diagonal */}
-            <div className="login-bg">
-                <div className="login-bg-top" />
-                <div className="login-bg-bottom" />
-            </div>
-
-            {/* Header con logo */}
-            <div className="login-header">
-                <div className="login-logo">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                        <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
-                        <circle cx="12" cy="9" r="2.5" />
-                    </svg>
+            <div className="login-card fade-in">
+                <div className="login-header" style={{textAlign: 'center', marginBottom: '2.5rem'}}>
+                    <div className="login-logo">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{color: 'var(--accent)'}}>
+                            <path d="M12 2C8 2 5 5 5 9c0 4.5 7 13 7 13s7-8.5 7-13c0-4-3-7-7-7z"/>
+                            <circle cx="12" cy="9" r="2.5"/>
+                        </svg>
+                    </div>
+                    <h1 className="login-titulo">Amerrisque</h1>
+                    <p className="login-subtitulo">Odontología de Vanguardia</p>
                 </div>
-                <h1 className="login-titulo">Amerrisque Dental</h1>
-                <p className="login-subtitulo">Tu sonrisa, nuestra misión</p>
-            </div>
 
-            {/* Card del formulario */}
-            <div className="login-card">
-                <h2 className="login-card-titulo">Bienvenido de vuelta</h2>
-                <p className="login-card-subtitulo">Inicia sesión para continuar</p>
-
-                <form onSubmit={handleLogin} className="login-form">
-                    {/* Email */}
+                <form onSubmit={handleLogin}>
                     <div className="login-campo">
-                        <label className="login-label">Correo electrónico</label>
-                        <div className="login-input-wrapper">
-                            <span className="login-input-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="2" y="4" width="20" height="16" rx="2" />
-                                    <path d="m22 7-10 7L2 7" />
-                                </svg>
-                            </span>
-                            <input
-                                type="email"
+                        <label className="login-label">Email Corporativo</label>
+                        <div className="login-input-wrapper" style={{position: 'relative'}}>
+                            <input 
+                                type="email" 
                                 className="login-input"
-                                placeholder="correo@amerrisque.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
+                                placeholder="ejemplo@amerrisque.com"
+                                value={email} 
+                                onChange={(e) => setEmail(e.target.value)} 
+                                required 
                             />
                         </div>
                     </div>
 
-                    {/* Contraseña */}
                     <div className="login-campo">
                         <label className="login-label">Contraseña</label>
-                        <div className="login-input-wrapper">
-                            <span className="login-input-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" />
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                </svg>
-                            </span>
-                            <input
-                                type={mostrarPassword ? 'text' : 'password'}
+                        <div className="login-input-wrapper" style={{position: 'relative'}}>
+                            <input 
+                                type={mostrarPass ? "text" : "password"} 
                                 className="login-input"
                                 placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                required 
                             />
-                            <button
-                                type="button"
+                            <button 
+                                type="button" 
                                 className="login-ojo"
-                                onClick={() => setMostrarPassword(!mostrarPassword)}
+                                style={{position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem'}}
+                                onClick={() => setMostrarPass(!mostrarPass)}
                             >
-                                {mostrarPassword ? (
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                                        <line x1="1" y1="1" x2="23" y2="23" />
-                                    </svg>
-                                ) : (
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                        <circle cx="12" cy="12" r="3" />
-                                    </svg>
-                                )}
+                                {mostrarPass ? '👁️' : '🙈'}
                             </button>
-                        </div>
-                        <div className="login-olvide">
-                            <a href="#">¿Olvidaste tu contraseña?</a>
                         </div>
                     </div>
 
-                    {/* Error */}
-                    {error && (
-                        <div className="login-error">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="8" x2="12" y2="12" />
-                                <line x1="12" y1="16" x2="12.01" y2="16" />
-                            </svg>
-                            {error}
-                        </div>
-                    )}
-
-                    {/* Botón */}
                     <button type="submit" className="login-btn" disabled={cargando}>
-                        {cargando ? (
-                            <span className="login-spinner" />
-                        ) : (
-                            <>
-                                Iniciar Sesión
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M5 12h14M12 5l7 7-7 7" />
-                                </svg>
-                            </>
-                        )}
+                        {cargando ? 'Verificando...' : 'Iniciar Sesión'} 
+                        {!cargando && <span style={{marginLeft: '0.5rem'}}>→</span>}
                     </button>
                 </form>
 
-                {/* Credenciales de acceso */}
-                <div className="login-credenciales">
-                    <p className="login-credenciales-titulo">Credenciales de acceso</p>
-                    <div className="login-credenciales-grid">
-                        <div className="login-cred-item" onClick={() => { setEmail('admin@amerrisque.com'); setPassword('Admin1234') }}>
-                            <span className="login-cred-icon admin">⚙️</span>
-                            <div>
-                                <p className="login-cred-rol">Administrador</p>
-                                <p className="login-cred-desc">Reportes y gestión total</p>
-                            </div>
+                <div className="login-credenciales" style={{marginTop: '2.5rem'}}>
+                    <p className="login-label" style={{textAlign: 'center', marginBottom: '1.25rem'}}>Acceso rápido al equipo</p>
+                    <div className="login-credenciales-grid" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
+                        <div className="login-cred-item" style={{background: '#f8fafc', padding: '1rem', borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s'}} 
+                            onClick={() => rellenarCredenciales('admin@amerrisque.com', 'Admin1234')}>
+                            <div style={{fontSize: '1.5rem', marginBottom: '0.25rem'}}>👑</div>
+                            <span className="login-cred-rol" style={{fontSize: '0.7rem', fontWeight: '800', color: 'var(--accent)'}}>ADMIN</span>
                         </div>
-                        <div className="login-cred-item" onClick={() => { setEmail('recepcion@amerrisque.com'); setPassword('Recep1234') }}>
-                            <span className="login-cred-icon recep">📋</span>
-                            <div>
-                                <p className="login-cred-rol">Recepcionista</p>
-                                <p className="login-cred-desc">Gestión de agenda y pagos</p>
-                            </div>
+                        <div className="login-cred-item" style={{background: '#f8fafc', padding: '1rem', borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s'}} 
+                            onClick={() => rellenarCredenciales('recepcion@amerrisque.com', 'Recep1234')}>
+                            <div style={{fontSize: '1.5rem', marginBottom: '0.25rem'}}>📅</div>
+                            <span className="login-cred-rol" style={{fontSize: '0.7rem', fontWeight: '800', color: 'var(--accent)'}}>RECEP</span>
                         </div>
-                        <div className="login-cred-item" onClick={() => { setEmail('doctor@amerrisque.com'); setPassword('Doctor1234') }}>
-                            <span className="login-cred-icon doctor">🦷</span>
-                            <div>
-                                <p className="login-cred-rol">Odontólogo</p>
-                                <p className="login-cred-desc">Historial clínico y citas</p>
-                            </div>
+                        <div className="login-cred-item" style={{background: '#f8fafc', padding: '1rem', borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s'}} 
+                            onClick={() => rellenarCredenciales('doctor@amerrisque.com', 'Doctor1234')}>
+                            <div style={{fontSize: '1.5rem', marginBottom: '0.25rem'}}>🩺</div>
+                            <span className="login-cred-rol" style={{fontSize: '0.7rem', fontWeight: '800', color: 'var(--accent)'}}>DOCTOR</span>
                         </div>
-                        <div className="login-cred-item" onClick={() => { setEmail('paciente@amerrisque.com'); setPassword('Paciente1234') }}>
-                            <span className="login-cred-icon paciente">👤</span>
-                            <div>
-                                <p className="login-cred-rol">Paciente</p>
-                                <p className="login-cred-desc">Ver citas y mi historial</p>
-                            </div>
+                        <div className="login-cred-item" style={{background: '#f8fafc', padding: '1rem', borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s'}} 
+                            onClick={() => rellenarCredenciales('paciente@amerrisque.com', 'Paciente1234')}>
+                            <div style={{fontSize: '1.5rem', marginBottom: '0.25rem'}}>👤</div>
+                            <span className="login-cred-rol" style={{fontSize: '0.7rem', fontWeight: '800', color: 'var(--accent)'}}>PACIENTE</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default FormularioLogin;

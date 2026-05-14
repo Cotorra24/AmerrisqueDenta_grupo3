@@ -1,150 +1,160 @@
-.pv-wrapper {
-    padding: 20px;
-    background: #f9fafb;
-    min-height: 100vh;
+.cat-premium {
+    animation: fadeIn 0.5s ease;
 }
 
-.pv-header {
+.cat-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
+    margin-bottom: 2.5rem;
+    gap: 2rem;
 }
 
-.pv-volver {
-    background: white;
-    border: 1px solid #e5e7eb;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.pv-titulo {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #111827;
-}
-
-.pv-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.pv-card {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-.pv-card-icon {
+.cat-text h2 {
     font-size: 2rem;
-    margin-bottom: 10px;
+    font-weight: 800;
 }
 
-.pv-card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
+.cat-text p {
+    color: var(--text-muted);
 }
 
-.pv-card-desc {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin-bottom: 15px;
-}
-
-.pv-card-price {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #2563eb;
-}
-
-.pv-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.pv-item {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    display: flex;
-    gap: 15px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.pv-item-fecha {
-    font-weight: 700;
-    color: #2563eb;
-    min-width: 80px;
-}
-
-.pv-item-doctor {
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.pv-item-diag {
+.cat-search-bar input {
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    min-width: 300px;
     font-size: 0.95rem;
 }
 
-.pv-item-obs {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin-top: 5px;
+.cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
 }
 
-.pv-stats-pago {
-    background: #2563eb;
-    color: white;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-}
-
-.pv-stat-pago p {
-    margin: 0;
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.pv-stat-pago h2 {
-    margin: 5px 0 0 0;
-    font-size: 1.8rem;
-}
-
-.pv-subtitulo {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.pv-pago-item {
+.cat-card {
     background: white;
-    padding: 15px;
-    border-radius: 10px;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    padding: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.cat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-light);
+}
+
+.cat-card-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-main);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.cat-card-content h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.cat-card-content p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.cat-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.pv-pago-fecha {
-    font-weight: 600;
-    margin: 0;
+.cat-price {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent);
 }
 
-.pv-pago-metodo {
-    font-size: 0.85rem;
-    color: #6b7280;
-    margin: 0;
-}
-
-.pv-pago-monto {
+.cat-btn-info {
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    border: none;
+    background: var(--bg-main);
+    color: var(--text-main);
     font-weight: 700;
-    color: #059669;
+    cursor: pointer;
+}
+
+/* Historial */
+.hist-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1.5rem;
+    transition: all 0.2s;
+}
+
+.hist-item:hover {
+    border-color: var(--accent-light);
+}
+
+.hist-fecha {
+    text-align: center;
+    min-width: 60px;
+}
+
+.f-dia {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.f-mes {
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Stats Pago */
+.stats-pago-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-pago-card {
+    padding: 2rem;
+    background: white;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+}
+
+.stat-pago-card.success { border-bottom: 4px solid var(--success); }
+.stat-pago-card.warning { border-bottom: 4px solid var(--warning); }
+
+.stat-pago-card span {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.stat-pago-card h3 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-top: 0.5rem;
 }

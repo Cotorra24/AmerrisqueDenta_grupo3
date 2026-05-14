@@ -3,13 +3,14 @@ import { Navigate } from 'react-router-dom'
 import { supabase } from '../../database/supabaseconfig'
 
 export default function RutaProtegida({ children, rolesPermitidos }) {
-    const [estado, setEstado] = useState('cargando') // 'cargando' | 'autorizado' | 'no-autorizado'
+    const [estado, setEstado] = useState('cargando')
 
     useEffect(() => {
         const verificar = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) { setEstado('no-autorizado'); return }
 
+            // Consultar tabla 'usuarios' (con minúscula como en tu SQL)
             const { data: usuario } = await supabase
                 .from('usuarios')
                 .select('rol_id')
@@ -29,9 +30,18 @@ export default function RutaProtegida({ children, rolesPermitidos }) {
 
     if (estado === 'cargando') {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <div style={{ width: 36, height: 36, border: '3px solid #e5e7eb', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f4ff' }}>
+                <div className="loading-spinner-global" />
+                <style>{`
+                    .loading-spinner-global {
+                        width: 40px; height: 40px;
+                        border: 3px solid #e5e7eb;
+                        border-top-color: #2563eb;
+                        border-radius: 50%;
+                        animation: spin 0.7s linear infinite;
+                    }
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                `}</style>
             </div>
         )
     }

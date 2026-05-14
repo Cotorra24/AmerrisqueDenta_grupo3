@@ -1,173 +1,101 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../database/supabaseconfig'
-import GestionPacientes from './Gestionpacientes'
-import '../paciente/Dashboard.css'
-import './DashboardAdmin.css'
+import GestionUsuarios from './GestionUsuarios'
+import GestionServicios from './GestionServicios'
+import './Dashboardadmin.css'
 
 export default function DashboardAdmin() {
-    const [usuario, setUsuario] = useState(null)
-    const [stats, setStats] = useState({ pacientes: 0, citasHoy: 0, nuevosMes: 0 })
-    const [kpis, setKpis] = useState({ atendidos: 0, citasDia: 0, ingresosMes: 0, saldoPendiente: 0 })
-    const [citas, setCitas] = useState([])
-    const [vista, setVista] = useState('inicio') // inicio | pacientes | reportes
-
-    const cargar = async () => {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
-        const { data: u } = await supabase.from('usuarios').select('nombre').eq('id', user.id).single()
-        setUsuario(u)
-
-        const { count: totalPacientes } = await supabase.from('pacientes').select('*', { count: 'exact', head: true }).eq('activo', true)
-
-        const hoy = new Date().toISOString().split('T')[0]
-        const { data: citasHoyData } = await supabase
-            .from('citas')
-            .select('*, pacientes(nombre,apellido), odontologos(usuarios(nombre,apellido))')
-            .gte('fecha_hora', hoy + 'T00:00:00')
-            .lte('fecha_hora', hoy + 'T23:59:59')
-            .order('fecha_hora', { ascending: true })
-
-        const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-        const { data: pagos } = await supabase.from('pagos').select('monto').gte('fecha_pago', inicioMes.split('T')[0])
-        
-        // Mock data for KPIs if tables don't exist yet
-        const ingresosMes = pagos?.reduce((s, p) => s + Number(p.monto), 0) || 0
-        const saldoPendiente = 5000 // Placeholder
-
-        setCitas(citasHoyData || [])
-        setStats({ pacientes: totalPacientes || 0, citasHoy: citasHoyData?.length || 0, nuevosMes: 8 })
-        setKpis({ atendidos: 12, citasDia: citasHoyData?.length || 0, ingresosMes, saldoPendiente })
-    }
+    const [stats, setStats] = useState({ usuarios: 0, servicios: 0, citas: 0, ingresos: 0 })
+    const [vistaActiva, setVistaActiva] = useState('inicio')
+    const [cargando, setCargando] = useState(true)
+    const navigate = useNavigate()
 
     useEffect(() => {
-        cargar()
+        const fetchStats = async () => {
+            const { count: userCount } = await supabase.from('usuarios').select('*', { count: 'exact', head: true })
+            const { count: servCount } = await supabase.from('servicios').select('*', { count: 'exact', head: true })
+            const { data: pagos } = await supabase.from('pagos').select('monto')
+            
+            const totalIngresos = pagos?.reduce((acc, p) => acc + p.monto, 0) || 0
+
+            setStats({
+                usuarios: userCount || 0,
+                servicios: servCount || 0,
+                ingresos: totalIngresos
+            })
+            setCargando(false)
+        }
+        fetchStats()
     }, [])
 
-    const cerrarSesion = async () => { await supabase.auth.signOut(); window.location.href = '/' }
-    const hoy = new Date().toLocaleDateString('es-NI', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-
-    if (vista === 'pacientes') return <GestionPacientes onVolver={() => setVista('inicio')} />
-
     return (
-        <div className="dash-layout">
-            <aside className="dash-sidebar admin-sidebar">
-                <div className="dash-brand">
-                    <div className="dash-brand-icon">🦷</div>
-                    <div><p className="dash-brand-name">Amerrisque</p><p className="dash-brand-sub">Dental</p></div>
+        <div className="admin-container fade-in">
+            <aside className="admin-sidebar">
+                <div className="dash-logo">
+                    <span className="logo-icon">🛡️</span>
+                    <span className="logo-text">AdminPanel</span>
                 </div>
-                <nav className="dash-nav">
-                    <button onClick={() => setVista('inicio')} className={`dash-nav-item ${vista === 'inicio' ? 'active' : ''}`}>🏠 Inicio</button>
-                    <button onClick={() => setVista('pacientes')} className={`dash-nav-item ${vista === 'pacientes' ? 'active' : ''}`}>👥 Pacientes</button>
-                    <button onClick={() => setVista('reportes')} className={`dash-nav-item ${vista === 'reportes' ? 'active' : ''}`}>📊 Reportes</button>
+                
+                <nav className="admin-nav">
+                    <button onClick={() => setVistaActiva('inicio')} className={vistaActiva === 'inicio' ? 'active' : ''}>
+                        📊 Estadísticas
+                    </button>
+                    <button onClick={() => setVistaActiva('usuarios')} className={vistaActiva === 'usuarios' ? 'active' : ''}>
+                        👥 Personal
+                    </button>
+                    <button onClick={() => setVistaActiva('servicios')} className={vistaActiva === 'servicios' ? 'active' : ''}>
+                        🦷 Servicios
+                    </button>
                 </nav>
-                <button onClick={cerrarSesion} className="dash-salir">↩ Cerrar Sesión</button>
+
+                <div className="admin-sidebar-footer">
+                    <button className="btn-logout-sidebar" onClick={async () => {
+                        await supabase.auth.signOut()
+                        navigate('/', { replace: true })
+                    }}>
+                        Cerrar Sesión
+                    </button>
+                </div>
             </aside>
 
             <main className="dash-main">
-                <div className="dash-header admin-header">
-                    <div>
-                        <p className="dash-fecha">Panel de Administración</p>
-                        <h1 className="dash-saludo">Bienvenida, {usuario?.nombre}</h1>
-                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: 0 }}>{hoy}</p>
-                    </div>
-                    <div className="dash-bell">🔔<span className="dash-bell-badge">1</span></div>
-                </div>
+                <header className="dash-header">
+                    <h1>Panel de Control Maestro</h1>
+                    <p>Bienvenido al centro de gestión de Amerrisque Dental</p>
+                </header>
 
-                <div className="dash-stats-top">
-                    <div className="dash-stat-top morado">
-                        <p className="dash-stat-top-num">{stats.pacientes}</p><p>Pacientes activos</p>
-                    </div>
-                    <div className="dash-stat-top morado">
-                        <p className="dash-stat-top-num">{stats.citasHoy}</p><p>Citas hoy</p>
-                    </div>
-                    <div className="dash-stat-top morado">
-                        <p className="dash-stat-top-num">{stats.nuevosMes}</p><p>Nuevos/mes</p>
-                    </div>
-                </div>
-
-                {/* KPIs */}
-                <div className="dash-section">
-                    <h2 className="dash-section-titulo">INDICADORES CLAVE</h2>
-                    <div className="admin-kpis">
-                        <div className="admin-kpi azul-claro">
-                            <span>👤</span>
-                            <p className="admin-kpi-num azul">{kpis.atendidos}</p>
-                            <p className="admin-kpi-label">hoy</p>
-                            <p className="admin-kpi-desc">Pacientes Atendidos</p>
-                        </div>
-                        <div className="admin-kpi verde-claro">
-                            <span>📅</span>
-                            <p className="admin-kpi-num verde">{kpis.citasDia}</p>
-                            <p className="admin-kpi-label">programadas</p>
-                            <p className="admin-kpi-desc">Citas del Día</p>
-                        </div>
-                        <div className="admin-kpi amarillo-claro">
-                            <span>💰</span>
-                            <p className="admin-kpi-num amarillo">C${(kpis.ingresosMes / 1000).toFixed(1)}k</p>
-                            <p className="admin-kpi-label">este mes</p>
-                            <p className="admin-kpi-desc">Ingresos del Mes</p>
-                        </div>
-                        <div className="admin-kpi rojo-claro">
-                            <span>⏰</span>
-                            <p className="admin-kpi-num rojo">C${(kpis.saldoPendiente / 1000).toFixed(1)}k</p>
-                            <p className="admin-kpi-label">pendiente</p>
-                            <p className="admin-kpi-desc">Saldo Pendiente</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Acceso rápido */}
-                <div className="dash-section">
-                    <h2 className="dash-section-titulo">ACCESO RÁPIDO</h2>
-                    <div className="admin-accesos">
-                        <div className="admin-acceso" onClick={() => setVista('pacientes')}>
-                            <span>👥</span>
-                            <div>
-                                <p className="admin-acceso-titulo">Gestionar Pacientes</p>
-                                <p className="admin-acceso-desc">{stats.pacientes} pacientes registrados</p>
+                <div className="dash-content-area">
+                    {vistaActiva === 'inicio' && (
+                        <div className="admin-stats-grid">
+                            <div className="admin-stat-card">
+                                <div className="stat-icon" style={{background: '#eff6ff', color: '#2563eb'}}>👥</div>
+                                <div className="stat-data">
+                                    <span className="stat-val">{stats.usuarios}</span>
+                                    <p>Usuarios Registrados</p>
+                                </div>
                             </div>
-                            <span>›</span>
-                        </div>
-                        <div className="admin-acceso" onClick={() => setVista('reportes')}>
-                            <span>📈</span>
-                            <div>
-                                <p className="admin-acceso-titulo">Reportes y Estadísticas</p>
-                                <p className="admin-acceso-desc">Análisis financiero y clínico</p>
+                            <div className="admin-stat-card">
+                                <div className="stat-icon" style={{background: '#f0fdf4', color: '#16a34a'}}>💰</div>
+                                <div className="stat-data">
+                                    <span className="stat-val">C$ {stats.ingresos.toLocaleString()}</span>
+                                    <p>Ingresos Totales</p>
+                                </div>
                             </div>
-                            <span>›</span>
+                            <div className="admin-stat-card">
+                                <div className="stat-icon" style={{background: '#fff7ed', color: '#ea580c'}}>🦷</div>
+                                <div className="stat-data">
+                                    <span className="stat-val">{stats.servicios}</span>
+                                    <p>Servicios Activos</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    )}
 
-                {/* Citas de hoy */}
-                <div className="dash-section">
-                    <div className="dash-section-header">
-                        <h2 className="dash-section-titulo">CITAS DE HOY</h2>
-                        <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>{stats.citasHoy} programadas</span>
-                    </div>
-                    {citas.length === 0 ? (
-                        <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>No hay citas para hoy</p>
-                    ) : citas.map(c => (
-                        <div key={c.id} className="dash-historial-item">
-                            <div className="dash-hist-avatar">{c.pacientes?.nombre?.[0]}</div>
-                            <div className="dash-hist-info">
-                                <p className="dash-hist-nombre">{c.pacientes?.nombre} {c.pacientes?.apellido}</p>
-                                <p className="dash-hist-doctor">Dr. {c.odontologos?.usuarios?.nombre} {c.odontologos?.usuarios?.apellido}</p>
-                            </div>
-                            <p style={{ color: '#7c3aed', fontWeight: 600, fontSize: '0.9rem', margin: 0 }}>
-                                {new Date(c.fecha_hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                        </div>
-                    ))}
+                    {vistaActiva === 'usuarios' && <GestionUsuarios />}
+                    {vistaActiva === 'servicios' && <GestionServicios />}
                 </div>
             </main>
-
-            <nav className="dash-mobile-nav">
-                <button onClick={() => setVista('inicio')} className={`dash-mobile-item ${vista === 'inicio' ? 'active' : ''}`}>🏠<span>Inicio</span></button>
-                <button onClick={() => setVista('pacientes')} className={`dash-mobile-item ${vista === 'pacientes' ? 'active' : ''}`}>👥<span>Pacientes</span></button>
-                <button onClick={() => setVista('reportes')} className={`dash-mobile-item ${vista === 'reportes' ? 'active' : ''}`}>📊<span>Reportes</span></button>
-                <button className="dash-mobile-item" onClick={cerrarSesion}>↩<span>Salir</span></button>
-            </nav>
         </div>
     )
 }
